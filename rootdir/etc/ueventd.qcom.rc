@@ -69,6 +69,7 @@
 /dev/block/mmcblk0p17     0660   system     system
 /dev/block/mmcblk0p18     0660   system     system
 /dev/video*               0660   system     camera
+/dev/media*               0660   system     camera
 #regular apps need to be able to open ion
 /dev/ion                  0664   system     system
 
