@@ -476,6 +476,11 @@ int32_t mm_camera_set_parm(mm_camera_obj_t * my_obj,
     int32_t rc = -1;
     uint16_t len;
     CDBG("%s type =%d", __func__, parm->parm_type);
+
+    if(htc_mm_camera_set_parm(my_obj, parm) == MM_CAMERA_OK) {
+        return MM_CAMERA_OK;
+    }
+
     switch(parm->parm_type) {
     case MM_CAMERA_PARM_OP_MODE:
         rc = mm_camera_util_set_op_mode(my_obj,
@@ -522,6 +527,10 @@ int32_t mm_camera_get_parm(mm_camera_obj_t * my_obj,
                             mm_camera_parm_t *parm)
 {
     int32_t rc = MM_CAMERA_OK;
+
+    if(htc_mm_camera_get_parm(my_obj, parm) == MM_CAMERA_OK) {
+        return MM_CAMERA_OK;
+    }
 
     switch(parm->parm_type) {
     case MM_CAMERA_PARM_CROP:
@@ -867,11 +876,11 @@ int32_t mm_camera_action_start(mm_camera_obj_t *my_obj,
             rc = mm_camera_send_native_ctrl_timeout_cmd(my_obj,CAMERA_PREPARE_SNAPSHOT, 0, NULL, 2000);
             CDBG("%s: prepare snapshot done opcode = %d, rc= %d\n", __func__, opcode, rc);
             break;
-        case MM_CAMERA_OPS_UNPREPARE_SNAPSHOT:
+        /*case MM_CAMERA_OPS_UNPREPARE_SNAPSHOT:
             send_on_off_evt = 0;
             rc = mm_camera_send_native_ctrl_timeout_cmd(my_obj,CAMERA_UNPREPARE_SNAPSHOT_ZSL, 0, NULL, 2000);
             CDBG("%s: unprepare snapshot done opcode = %d, rc= %d\n", __func__, opcode, rc);
-            break;
+            break;*/
         default:
             break;
         }
@@ -891,11 +900,11 @@ int32_t mm_camera_action_start(mm_camera_obj_t *my_obj,
             rc = mm_camera_send_native_ctrl_timeout_cmd(my_obj,CAMERA_PREPARE_SNAPSHOT, 0, NULL, 2000);
             CDBG("%s: prepare snapshot done opcode = %d, rc= %d\n", __func__, opcode, rc);
             break;
-        case MM_CAMERA_OPS_UNPREPARE_SNAPSHOT:
+        /*case MM_CAMERA_OPS_UNPREPARE_SNAPSHOT:
             send_on_off_evt = 0;
             rc = mm_camera_send_native_ctrl_timeout_cmd(my_obj,CAMERA_UNPREPARE_SNAPSHOT_ZSL, 0, NULL, 2000);
             CDBG("%s: unprepare snapshot done opcode = %d, rc= %d\n", __func__, opcode, rc);
-            break;
+            break;*/
         default:
             break;
         }

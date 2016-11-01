@@ -235,6 +235,7 @@ int mm_camera_read_msm_frame(mm_camera_obj_t * my_obj,
     if (rc < 0)
         return idx;
     idx = vb.index;
+#if 0
     for(i = 0; i < vb.length; i++) {
         CDBG("%s plane %d addr offset: %d data offset:%d\n",
              __func__, i, vb.m.planes[i].reserved[0],
@@ -244,7 +245,7 @@ int mm_camera_read_msm_frame(mm_camera_obj_t * my_obj,
         stream->frame.frame[idx].planes[i].data_offset =
             vb.m.planes[i].data_offset;
     }
-
+#endif
     stream->frame.frame[idx].frame.frame_id = vb.sequence;
     stream->frame.frame[idx].frame.ts.tv_sec  = vb.timestamp.tv_sec;
     stream->frame.frame[idx].frame.ts.tv_nsec = vb.timestamp.tv_usec * 1000;

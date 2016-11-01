@@ -527,7 +527,6 @@ private:
     void processInfoEvent(mm_camera_info_event_t *event, app_notify_cb_t *);
     void processprepareSnapshotEvent(cam_ctrl_status_t *);
     void roiEvent(fd_roi_t roi, app_notify_cb_t *);
-    void zslFlashEvent(struct zsl_flash_t evt, app_notify_cb_t *);
     void zoomEvent(cam_ctrl_status_t *status, app_notify_cb_t *);
     void autofocusevent(cam_ctrl_status_t *status, app_notify_cb_t *);
     void handleZoomEventForPreview(app_notify_cb_t *);
@@ -574,6 +573,7 @@ private:
     int getISOSpeedValue();
     int getAutoFlickerMode();
     int getFlashMode();
+    bool getFlashCondition(void);
     status_t setAntibanding(const QCameraParameters& params);
     status_t setEffect(const QCameraParameters& params);
     status_t setExposureCompensation(const QCameraParameters &params);
@@ -748,6 +748,7 @@ private:
     int mSnapshotFormat;
     int mZslInterval;
     bool mRestartPreview;
+    bool mFlashCond;
     bool mMobiCatEnabled;
 
 /*for histogram*/

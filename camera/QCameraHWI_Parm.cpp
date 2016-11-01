@@ -157,21 +157,35 @@ static struct camera_size_type zsl_picture_sizes[] = {
 };
 
 static camera_size_type default_picture_sizes[] = {
-  { 4000, 3000}, // 12MP
-  { 3200, 2400}, // 8MP
-  { 2592, 1944}, // 5MP
-  { 2048, 1536}, // 3MP QXGA
-  { 1920, 1080  }, //HD1080
-  { 1600, 1200}, // 2MP UXGA
-  { 1280, 768}, //WXGA
-  { 1280, 720}, //HD720
-  { 1024, 768}, // 1MP XGA
-  { 800, 600}, //SVGA
-  { 800, 480}, // WVGA
-  { 640, 480}, // VGA
-  { 352, 288}, //CIF
-  { 320, 240}, // QVGA
-  { 176, 144} // QCIF
+  {2688, 1520},
+  {2592, 1456},
+  {2048, 1520},
+  {2048, 1216},
+  {2048, 1152},
+  {1920, 1088},
+  {1920, 1080},
+  {1600, 1200},
+  {1600, 896},
+  {1520, 1520},
+  {1456, 1088},
+  {1456, 880},
+  {1456, 832},
+  {1440, 1088},
+  {1280, 960},
+  {1280, 768},
+  {1280, 720},
+  {1024, 768},
+  {1088, 1088},
+  {800, 600},
+  {800, 480},
+  {720, 720},
+  {640, 480},
+  {640, 384},
+  {640, 368},
+  {480, 480},
+  {352, 288},
+  {320, 240},
+  {176, 144}
 };
 
 
@@ -1435,11 +1449,11 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setStrTextures(params)))                  final_rc = rc;
     if ((rc = setPreviewFormat(params)))                final_rc = rc;
     if ((rc = setSkinToneEnhancement(params)))          final_rc = rc;
-    if ((rc = setWaveletDenoise(params)))               final_rc = rc;
+    //if ((rc = setWaveletDenoise(params)))               final_rc = rc;
     if ((rc = setAntibanding(params)))                  final_rc = rc;
     //    if ((rc = setOverlayFormats(params)))         final_rc = rc;
     if ((rc = setRedeyeReduction(params)))              final_rc = rc;
-    if ((rc = setCaptureBurstExp()))                    final_rc = rc;
+    //if ((rc = setCaptureBurstExp()))                    final_rc = rc;
 
     const char *str_val = params.get("capture-burst-exposures");
     if ( str_val == NULL || strlen(str_val)==0 ) {
@@ -1481,7 +1495,7 @@ status_t QCameraHardwareInterface::setParameters(const QCameraParameters& params
     if ((rc = setSelectableZoneAf(params)))             final_rc = rc;
     // setHighFrameRate needs to be done at end, as there can
     // be a preview restart, and need to use the updated parameters
-    if ((rc = setHighFrameRate(params)))  final_rc = rc;
+    //if ((rc = setHighFrameRate(params)))  final_rc = rc;
     if ((rc = setZSLBurstLookBack(params))) final_rc = rc;
     if ((rc = setZSLBurstInterval(params))) final_rc = rc;
     if ((rc = setNoDisplayMode(params))) final_rc = rc;
@@ -2037,9 +2051,11 @@ status_t QCameraHardwareInterface::setMeteringAreas(const QCameraParameters& par
              && (areas[0].x2 == 0) && (areas[0].y2 == 0) && (areas[0].weight == 0)) {
             num_areas_found = 0;
         }
-#if 1
-        cam_set_aec_roi_t aec_roi_value;
-        uint16_t x1, x2, y1, y2;
+#if 1 //temp solution
+
+        roi_info_t af_roi_value;
+        memset(&af_roi_value, 0, sizeof(roi_info_t));
+        uint16_t x1, x2, y1, y2, dx, dy;
         int previewWidth, previewHeight;
         this->getPreviewSize(&previewWidth, &previewHeight);
         //transform the coords from (-1000, 1000) to (0, previewWidth or previewHeight)
@@ -2047,24 +2063,20 @@ status_t QCameraHardwareInterface::setMeteringAreas(const QCameraParameters& par
         y1 = (uint16_t)((areas[0].y1 + 1000.0f)*(previewHeight/2000.0f));
         x2 = (uint16_t)((areas[0].x2 + 1000.0f)*(previewWidth/2000.0f));
         y2 = (uint16_t)((areas[0].y2 + 1000.0f)*(previewHeight/2000.0f));
-        delete areas;
+        dx = x2 - x1;
+        dy = y2 - y1;
 
-        if(num_areas_found == 1) {
-            aec_roi_value.aec_roi_enable = AEC_ROI_ON;
-            aec_roi_value.aec_roi_type = AEC_ROI_BY_COORDINATE;
-            aec_roi_value.aec_roi_position.coordinate.x = (x1+x2)/2;
-            aec_roi_value.aec_roi_position.coordinate.y = (y1+y2)/2;
-        } else {
-            aec_roi_value.aec_roi_enable = AEC_ROI_OFF;
-            aec_roi_value.aec_roi_type = AEC_ROI_BY_COORDINATE;
-            aec_roi_value.aec_roi_position.coordinate.x = DONT_CARE_COORDINATE;
-            aec_roi_value.aec_roi_position.coordinate.y = DONT_CARE_COORDINATE;
-        }
-
-        if(native_set_parms(MM_CAMERA_PARM_AEC_ROI, sizeof(cam_set_aec_roi_t), (void *)&aec_roi_value))
+        af_roi_value.num_roi = num_areas_found;
+        af_roi_value.roi[0].x = x1;
+        af_roi_value.roi[0].y = y1;
+        af_roi_value.roi[0].dx = dx;
+        af_roi_value.roi[0].dy = dy;
+        af_roi_value.is_multiwindow = 0;
+        if (native_set_parms(MM_CAMERA_PARM_AEC_ROI, sizeof(roi_info_t), (void*)&af_roi_value))
             rc = NO_ERROR;
         else
             rc = BAD_VALUE;
+        delete areas;
 #endif
 #if 0   //solution including multi-roi, to be enabled later
         aec_mtr_area_t aecArea;
@@ -2928,6 +2940,35 @@ int QCameraHardwareInterface::getFlashMode() {
         ALOGE("%s: Error: Flash parameter not-set (unexpected)", __func__);
         return -1;
     }
+}
+
+bool QCameraHardwareInterface::getFlashCondition(void)
+{
+    int32_t rc = 0;
+    bool flash_cond = false;
+
+    if(isZSLMode()){
+        int flash_mode = getFlashMode();
+
+        if(flash_mode == LED_MODE_ON) {
+            flash_cond = true;
+        }
+
+        if(flash_mode == LED_MODE_AUTO) {
+            int32_t flash_expected = 0;
+            rc = cam_config_get_parm(mCameraId, MM_CAMERA_PARM_QUERY_FLASH4SNAP,
+                             &flash_expected);
+
+            if(MM_CAMERA_OK == rc) {
+                flash_cond = flash_expected > 0;
+            }
+            else
+                ALOGE("%s: Failed to get MM_CAMERA_PARM_QUERY_FLASH4SNAP, rc %d", __func__, rc);
+        }
+    }
+
+    ALOGV("%s: myMode %d, flash condition %d", __func__, myMode, flash_cond);
+    return flash_cond;
 }
 
 status_t QCameraHardwareInterface::setFlash(const QCameraParameters& params)

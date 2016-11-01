@@ -16,6 +16,12 @@ MM_CAM_FILES:= \
         mm_camera_helper.c \
         mm_omx_jpeg_encoder.c
 
+# CAM specific methods
+MM_CAM_FILES+= \
+         htc/htc_mm_camera.c \
+         htc/htc_mm_camera_dimension.c \
+         htc/htc_mm_camera_sizes.c
+
 LOCAL_CFLAGS+= -D_ANDROID_
 LOCAL_COPY_HEADERS_TO := mm-camera-interface
 LOCAL_COPY_HEADERS += mm_camera_interface2.h

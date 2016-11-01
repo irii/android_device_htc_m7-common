@@ -201,6 +201,7 @@ QCameraHardwareInterface(int cameraId, int mode)
 
     pthread_mutex_init(&mAsyncCmdMutex, NULL);
     pthread_cond_init(&mAsyncCmdWait, NULL);
+    mFlashCond = false;
 
     property_get("persist.debug.sf.showfps", value, "0");
     mDebugFps = atoi(value);
@@ -913,9 +914,6 @@ void  QCameraHardwareInterface::processInfoEvent(
         case MM_CAMERA_INFO_EVT_ROI:
             roiEvent(event->e.roi, app_cb);
             break;
-        case MM_CAMERA_INFO_FLASH_FRAME_IDX:
-            zslFlashEvent(event->e.zsl_flash_info, app_cb);
-            break;
         default:
             break;
     }
@@ -962,17 +960,6 @@ void  QCameraHardwareInterface::processEvent(mm_camera_event_t *event)
     }
     ALOGI("processEvent: X");
     return;
-}
-
-
-void QCameraHardwareInterface::zslFlashEvent(struct zsl_flash_t evt, app_notify_cb_t *) {
-    ALOGE("%s: E", __func__);
-    ALOGE("flashEvent: numFrames = %d, frameId[0] = %d", evt.valid_entires, evt.frame_idx[0]);
-    status_t ret = mStreamSnap->takePictureZSL();
-    if (ret != MM_CAMERA_OK) {
-        ALOGE("%s: Error taking ZSL snapshot!", __func__);
-    }
-    ALOGE("%s: X", __func__);
 }
 
 bool QCameraHardwareInterface::preview_parm_config (cam_ctrl_dimension_t* dim,
@@ -1080,6 +1067,12 @@ status_t QCameraHardwareInterface::startPreview2()
         ALOGE("%s:Preview already started  mCameraState = %d!", __func__, mCameraState);
         ALOGE("%s: X", __func__);
         return NO_ERROR;
+    }
+
+    if (mFlashCond) {
+        ALOGE("%s:Setting non-ZSL mode",__func__);
+        mParameters.set(QCameraParameters::KEY_CAMERA_MODE, 0);
+        myMode = (camera_mode_t)(myMode & ~CAMERA_ZSL_MODE);
     }
 
     /*  get existing preview information, by qury mm_camera*/
@@ -1727,6 +1720,19 @@ status_t  QCameraHardwareInterface::takePicture()
         mStreamLiveSnap = NULL;
     }
 
+    if(QCAMERA_HAL_RECORDING_STARTED != mPreviewState){
+      if (!mFlashCond){
+          mFlashCond = getFlashCondition();
+      }
+      ALOGV("%s: Flash Contidion %d", __func__, mFlashCond);
+
+      if(mFlashCond) {
+        mRestartPreview = true;
+        pausePreviewForZSL();
+      }
+      mFlashCond = false;
+    }
+
     hdr = getHdrInfoAndSetExp(MAX_HDR_EXP_FRAME_NUM, &frm_num, exp);
     mStreamSnap->resetSnapshotCounters();
     mStreamSnap->InitHdrInfoForSnapshot(hdr, frm_num, exp);
@@ -1738,36 +1744,11 @@ status_t  QCameraHardwareInterface::takePicture()
         mStreamSnap->setFullSizeLiveshot(false);
         if (isZSLMode()) {
             if (mStreamSnap != NULL) {
-                // Query if flash is required based on lighting condition
-                int32_t flash_expected = 0;
-                if(MM_CAMERA_OK != cam_config_get_parm(mCameraId,
-                          MM_CAMERA_PARM_QUERY_FLASH4ZSL, &flash_expected)){
-                    ALOGE("%s: error: can not get flash_expected value", __func__);
-                    return BAD_VALUE;
-                }
-                ALOGV("flash_expected = %d", flash_expected);
-                if(getFlashMode() != LED_MODE_OFF && flash_expected) {
-                    pausePreviewForZSL();
-                    // Flash is used
-                    takePicturePrepareHardware();
-
-                    //start flash LED
-                    uint32_t value = 1;
-                    if(native_set_parms(MM_CAMERA_PARM_ZSL_FLASH, sizeof(value),
-                                           (void *)&value) == false) {
-                        ALOGE("%s: error: cannot set ZSL flash", __func__);
-                        return BAD_VALUE;
-                    }
-
-                    // takepictureZSL() will be called when the event for
-                    // zslflash is received
-                } else {
-                    //Flash is not used
-                    pausePreviewForZSL();
-                    if (MM_CAMERA_OK != mStreamSnap->takePictureZSL()) {
-                        ALOGE("%s: Error taking ZSL snapshot!", __func__);
-                        ret = BAD_VALUE;
-                    }
+                pausePreviewForZSL();
+                ret = mStreamSnap->takePictureZSL();
+                if (ret != MM_CAMERA_OK) {
+                    ALOGE("%s: Error taking ZSL snapshot!", __func__);
+                    ret = BAD_VALUE;
                 }
             }
             else {
