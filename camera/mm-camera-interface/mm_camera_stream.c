@@ -287,26 +287,10 @@ int32_t mm_camera_util_s_ctrl( int32_t fd,  uint32_t id, int32_t value)
     return rc;
 }
 
-int32_t mm_camera_util_private_s_ctrl(int32_t fd,  uint32_t id, void __user *value )
+int32_t mm_camera_util_private_s_ctrl(int32_t fd,  uint32_t id, void __user *value)
 {
-    int rc = MM_CAMERA_OK;
-    struct msm_camera_v4l2_ioctl_t v4l2_ioctl;
-
-    if (!value) {
-        return MM_CAMERA_E_INVALID_INPUT;
-    }
-
-    memset(&v4l2_ioctl, 0, sizeof(v4l2_ioctl));
-    v4l2_ioctl.id = id;
-    v4l2_ioctl.ioctl_ptr = value;
-    rc = ioctl (fd, MSM_CAM_V4L2_IOCTL_PRIVATE_S_CTRL, &v4l2_ioctl);
-
-    if(rc) {
-        CDBG_ERROR("%s: fd=%d, S_CTRL, id=0x%x, value = 0x%x, rc = %d\n",
-                 __func__, fd, id, (uint32_t)value, rc);
-        rc = MM_CAMERA_E_GENERAL;
-    }
-    return rc;
+    // MSM_CAM_V4L2_IOCTL_PRIVATE_S_CTRL is not supported by kernel
+    return mm_camera_util_s_ctrl(fd, id, (int)value);
 }
 
 int32_t mm_camera_util_g_ctrl( int32_t fd, uint32_t id, int32_t *value)
@@ -386,6 +370,7 @@ static int mm_camera_stream_util_set_ext_mode(mm_camera_stream_t *stream)
         case MM_CAMERA_STREAM_RAW:
                 s_parm.parm.capture.extendedmode = MSM_V4L2_EXT_CAPTURE_MODE_MAIN; //MSM_V4L2_EXT_CAPTURE_MODE_RAW;
                 break;
+#if 0
         case MM_CAMERA_STREAM_AEC:
                 s_parm.parm.capture.extendedmode = MSM_V4L2_EXT_CAPTURE_MODE_AEC;
                 break;
@@ -398,6 +383,7 @@ static int mm_camera_stream_util_set_ext_mode(mm_camera_stream_t *stream)
         case MM_CAMERA_STREAM_IHIST:
                 s_parm.parm.capture.extendedmode = MSM_V4L2_EXT_CAPTURE_MODE_IHIST;
                 break;
+#endif
         case MM_CAMERA_STREAM_VIDEO_MAIN:
         default:
             return 0;

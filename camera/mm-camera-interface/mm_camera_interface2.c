@@ -620,9 +620,9 @@ extern mm_camera_t * mm_camera_query (uint8_t *num_cameras)
         continue;
       }
 
-      char * mdev_cfg, *prev_value;
+      char * mdev_cfg;
       int cam_type = 0, mount_angle = 0, info_index = 0;
-      mdev_cfg = strtok_r(mdev_info.serial, "-", &prev_value);
+      mdev_cfg = strtok(mdev_info.serial, "-");
       while(mdev_cfg != NULL) {
           if(info_index == 0) {
               if(strcmp(mdev_cfg, QCAMERA_NAME))
@@ -632,7 +632,7 @@ extern mm_camera_t * mm_camera_query (uint8_t *num_cameras)
           } else if(info_index == 2) {
               cam_type = atoi(mdev_cfg);
           }
-          mdev_cfg = strtok_r(NULL, "-", &prev_value);
+          mdev_cfg = strtok(NULL, "-");
           info_index++;
       }
 

@@ -1096,6 +1096,17 @@ typedef struct {
 } mm_camera_event_t;
 
 typedef enum {
+  MM_CAMERA_INFO_EVT_ROI,
+  MM_CAMERA_INFO_FLASH_FRAME_IDX,
+  MM_CAMERA_INFO_EVT_MAX
+} mm_camera_info_event_type_t;
+
+typedef enum {
+  MM_CAMERA_STATS_EVT_HISTO,
+  MM_CAMERA_STATS_EVT_MAX
+} mm_camera_stats_event_type_t;
+
+typedef enum {
   MM_CAMERA_REPRO_CMD_INVALID,
   MM_CAMERA_REPRO_CMD_OPEN,
   MM_CAMERA_REPRO_CMD_CONFIG,

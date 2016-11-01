@@ -124,18 +124,21 @@ ifneq ($(USE_CAMERA_STUB),true)
         $(TARGET_OUT_HEADERS)/mm-still/jpeg \
 
       ifeq ($(V4L2_BASED_LIBCAM),true)
-        LOCAL_C_INCLUDES+= hardware/qcom/media/mm-core/inc
+        LOCAL_C_INCLUDES+= $(call project-path-for,qcom-media)/mm-core/inc
         LOCAL_C_INCLUDES+= $(TARGET_OUT_HEADERS)/mm-still/mm-omx
         LOCAL_C_INCLUDES+= $(LOCAL_PATH)/mm-camera-interface
       else
         LOCAL_C_INCLUDES+= hardware/qcom/display/libgenlock
       endif
 
-      LOCAL_C_INCLUDES+= hardware/qcom/display/libgralloc
-      LOCAL_C_INCLUDES+= hardware/qcom/media/libstagefrighthw
+      LOCAL_C_INCLUDES+= $(call project-path-for,qcom-display)/libgralloc
+      LOCAL_C_INCLUDES+= $(call project-path-for,qcom-media)/libstagefrighthw
+
+      LOCAL_C_INCLUDES+= frameworks/native/include/media/hardware
+      LOCAL_C_INCLUDES+= system/media/camera/include
 
       ifeq ($(V4L2_BASED_LIBCAM),true)
-        LOCAL_SHARED_LIBRARIES:= libutils libui libcamera_client liblog libcutils libmmjpeg libmmstillomx libimage-jpeg-enc-omx-comp
+        LOCAL_SHARED_LIBRARIES:= libutils libui libcamera_client liblog libcutils #libmmjpeg libmmstillomx libimage-jpeg-enc-omx-comp
         LOCAL_SHARED_LIBRARIES += libmmcamera_interface2
       else
          LOCAL_SHARED_LIBRARIES:= libutils libui libcamera_client liblog libcutils libmmjpeg libgenlock
@@ -153,7 +156,7 @@ ifneq ($(USE_CAMERA_STUB),true)
       endif
 
       LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
-      LOCAL_MODULE:= camera_1.0.$(TARGET_BOARD_PLATFORM)
+      LOCAL_MODULE:= camera.$(TARGET_BOARD_PLATFORM)
       LOCAL_MODULE_TAGS := optional
       include $(BUILD_SHARED_LIBRARY)
 
@@ -166,5 +169,5 @@ endif
 
 #Enable only to compile new interafece and HAL files.
 ifeq ($(V4L2_BASED_LIBCAM),true)
-include $(LOCAL_PATH1)/QCamera/Android.mk
+#include $(LOCAL_PATH1)/QCamera/Android.mk
 endif
