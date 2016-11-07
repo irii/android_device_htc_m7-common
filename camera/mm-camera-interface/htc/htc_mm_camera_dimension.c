@@ -71,17 +71,24 @@ int32_t htc_mm_camera_get_parm_dimension(mm_camera_obj_t * my_obj,
 
 
 static int32_t htc_correct_display_dim(cam_ctrl_dimension_t * dim) {
-    int width = dim->display_width;
-    int height = dim->display_height;
+    uint8_t num_planes;
+    uint32_t planes[VIDEO_MAX_PLANES];
 
-    dim->display_frame_offset.num_planes = 2;
-    dim->display_frame_offset.mp[0].len = width*height;
+    dim->display_frame_offset.frame_len = 
+        mm_camera_get_msm_frame_len(dim->prev_format, CAMERA_MODE_2D,
+            dim->display_width, dim->display_height, OUTPUT_TYPE_P, 
+             &num_planes, planes);
+
+    dim->display_frame_offset.num_planes = num_planes;
+
+    dim->display_frame_offset.mp[0].len = planes[0];
     dim->display_frame_offset.mp[0].offset = 0;
 
-    dim->display_frame_offset.mp[1].len = PAD_TO_WORD(width*height/2);
-    dim->display_frame_offset.mp[1].offset = dim->display_frame_offset.mp[0].len;
-
-    dim->display_frame_offset.frame_len = dim->display_frame_offset.mp[0].len + dim->display_frame_offset.mp[1].len;
+    for(int i = 1; i < num_planes; i++) {
+        dim->display_frame_offset.mp[i].len = planes[i];
+        dim->display_frame_offset.mp[i].offset = dim->display_frame_offset.mp[i-1].len +
+             dim->display_frame_offset.mp[i - 1].offset;
+    }
 
     return MM_CAMERA_OK;
 }
