@@ -465,6 +465,7 @@ configSnapshotDimension(cam_ctrl_dimension_t* dim)
             goto end;
         }
     }
+
     /* set_parm will return corrected dimension based on aspect ratio and
        ceiling size */
     mPictureWidth = dim->picture_width;

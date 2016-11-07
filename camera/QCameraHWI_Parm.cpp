@@ -374,17 +374,17 @@ static const str_map recording_Hints[] = {
 
 static const str_map preview_formats[] = {
         {QCameraParameters::PIXEL_FORMAT_YUV420SP,   HAL_PIXEL_FORMAT_YCrCb_420_SP},
-        {QCameraParameters::PIXEL_FORMAT_YUV420SP_ADRENO, HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO},
-        {QCameraParameters::PIXEL_FORMAT_YV12, HAL_PIXEL_FORMAT_YV12},
-        {QCameraParameters::PIXEL_FORMAT_YUV420P,HAL_PIXEL_FORMAT_YV12},
+        {QCameraParameters::PIXEL_FORMAT_YUV420SP_ADRENO, HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO}, // TODO: Buggy (Green bar)
+        {QCameraParameters::PIXEL_FORMAT_YV12, HAL_PIXEL_FORMAT_YV12}, // TODO: Not working
+        {QCameraParameters::PIXEL_FORMAT_YUV420P, HAL_PIXEL_FORMAT_YV12}, // TODO: Not working
         {QCameraParameters::PIXEL_FORMAT_NV12, HAL_PIXEL_FORMAT_YCbCr_420_SP}
 };
 
 static const preview_format_info_t preview_format_info_list[] = {
-  {HAL_PIXEL_FORMAT_YCrCb_420_SP, CAMERA_YUV_420_NV21, CAMERA_PAD_TO_WORD, 2},
-  {HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO, CAMERA_YUV_420_NV21, CAMERA_PAD_TO_4K, 2},
-  {HAL_PIXEL_FORMAT_YCbCr_420_SP, CAMERA_YUV_420_NV12, CAMERA_PAD_TO_WORD, 2},
-  {HAL_PIXEL_FORMAT_YV12,         CAMERA_YUV_420_YV12, CAMERA_PAD_TO_WORD, 3}
+  {HAL_PIXEL_FORMAT_YCrCb_420_SP, /*preview format*/HAL_PIXEL_FORMAT_YCbCr_420_SP, CAMERA_YUV_420_NV21, CAMERA_PAD_TO_WORD, 2},
+  {HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO, /*preview format*/HAL_PIXEL_FORMAT_YCrCb_420_SP_ADRENO, CAMERA_YUV_420_NV21, CAMERA_PAD_TO_4K, 2},
+  {HAL_PIXEL_FORMAT_YCbCr_420_SP, /*preview format*/HAL_PIXEL_FORMAT_YCbCr_420_SP, CAMERA_YUV_420_NV12, CAMERA_PAD_TO_WORD, 2},
+  {HAL_PIXEL_FORMAT_YV12, /*preview format*/HAL_PIXEL_FORMAT_YV12, CAMERA_YUV_420_YV12, CAMERA_PAD_TO_WORD, 3}
 };
 
 static const str_map zsl_modes[] = {
@@ -763,7 +763,7 @@ void QCameraHardwareInterface::initDefaultParameters()
     } else {
       mDimension.main_img_format = CAMERA_YUV_420_NV21;
     }
-    mDimension.thumb_format    = CAMERA_YUV_420_NV21;
+    mDimension.thumb_format    = CAMERA_YUV_420_NV12;
     ALOGV("%s: main_img_format =%d, thumb_format=%d", __func__,
          mDimension.main_img_format, mDimension.thumb_format);
     mDimension.prev_padding_format = CAMERA_PAD_TO_WORD;
@@ -2880,7 +2880,7 @@ status_t QCameraHardwareInterface::setPreviewFormat(const QCameraParameters& par
         int i;
 
         for (i = 0; i < num; i++) {
-          if (preview_format_info_list[i].Hal_format == previewFormat) {
+          if (preview_format_info_list[i].key == previewFormat) {
             mPreviewFormatInfo = preview_format_info_list[i];
             break;
           }
@@ -2891,6 +2891,10 @@ status_t QCameraHardwareInterface::setPreviewFormat(const QCameraParameters& par
           mPreviewFormatInfo.padding = CAMERA_PAD_TO_WORD;
           return BAD_VALUE;
         }
+
+        bool ret = native_set_parms(MM_CAMERA_PARM_PREVIEW_FORMAT, sizeof(cam_format_t),
+                                   (void *)&mPreviewFormatInfo.mm_cam_format);
+
         mParameters.set(QCameraParameters::KEY_PREVIEW_FORMAT, str);
         mPreviewFormat = mPreviewFormatInfo.mm_cam_format;
         ALOGI("Setting preview format to %d, i =%d, num=%d, hal_format=%d",
@@ -3573,7 +3577,7 @@ cam_format_t QCameraHardwareInterface::getPreviewFormat() const
         int num = sizeof(preview_format_info_list)/sizeof(preview_format_info_t);
         int i;
         for (i = 0; i < num; i++) {
-          if (preview_format_info_list[i].Hal_format == value) {
+          if (preview_format_info_list[i].key == value) {
             foramt = preview_format_info_list[i].mm_cam_format;
             break;
           }

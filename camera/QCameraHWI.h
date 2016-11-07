@@ -68,7 +68,9 @@ struct str_map {
 };
 
 struct preview_format_info_t {
+   int key;
    int Hal_format;
+
    cam_format_t mm_cam_format;
    cam_pad_format_t padding;
    int num_planar;

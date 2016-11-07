@@ -1013,7 +1013,7 @@ bool QCameraHardwareInterface::preview_parm_config (cam_ctrl_dimension_t* dim,
       dim->main_img_format = CAMERA_YUV_422_NV61;
     else
       dim->main_img_format = CAMERA_YUV_420_NV21;
-    dim->thumb_format = CAMERA_YUV_420_NV21;
+    dim->thumb_format = CAMERA_YUV_420_NV12;
     ALOGI("preview_parm_config: X");
     return matching;
 }

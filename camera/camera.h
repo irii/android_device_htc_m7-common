@@ -11,6 +11,8 @@
 #include <stdbool.h>
 #include "QCamera_Intf.h"
 
+#define MSM_CAMERA_SERVER "/dev/video100"
+
 /* No sharpness for default */
 #define CAMERA_MIN_SHARPNESS   0
 #define CAMERA_DEF_SHARPNESS   10
@@ -89,8 +91,8 @@ typedef enum {
   AF_MODE_MAX
 } isp3a_af_mode_t;
 
-#define TRUE (1)
-#define FALSE (0)
+#define TRUE (1==1)
+#define FALSE (!TRUE)
 
 typedef struct {
   uint32_t  in1_w;

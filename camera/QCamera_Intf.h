@@ -44,7 +44,7 @@
 #define CEILING4(X)  (((X) + 0x0003) & 0xFFFC)
 #define CEILING2(X)  (((X) + 0x0001) & 0xFFFE)
 
-#define MAX_ROI 4
+#define MAX_ROI 2
 #define MAX_NUM_PARM 5
 #define MAX_NUM_OPS 2
 #define VIDEO_MAX_PLANES 8
@@ -434,6 +434,7 @@ typedef enum {
     MM_CAMERA_PARM_WAVELET_DENOISE,
     MM_CAMERA_PARM_3D_DISPLAY_DISTANCE,
     MM_CAMERA_PARM_3D_VIEW_ANGLE,
+    MM_CAMERA_PARM_PREVIEW_FORMAT,
     MM_CAMERA_PARM_RDI_FORMAT,
     MM_CAMERA_PARM_HFR_SIZE, /* 55 */
     MM_CAMERA_PARM_3D_EFFECT,
@@ -497,8 +498,7 @@ typedef enum {
     MM_CAMERA_PARAM_EXPOSURE_TIME,
     MM_CAMERA_PARM_EXTERNAL_DIS_ENABLE,
     MM_CAMERA_PARAM_ISO_AUTO_VALUE,
-    MM_CAMERA_PARM_ZSL_FLASH, /* 115 */
-    MM_CAMERA_PARM_YUV_THRU_VFE,
+    MM_CAMERA_PARM_YUV_THRU_VFE, /* 115 */
     MM_CAMERA_PARM_VIDEO_HDR,
     MM_CAMERA_PARM_SET_ZSL_EXP_BKT,
     MM_CAMERA_PARM_QUERY_FLASH4ZSL,
@@ -613,6 +613,7 @@ typedef enum {
   CAMERA_SET_PARM_3D_DISPLAY_DISTANCE,
   CAMERA_SET_PARM_3D_VIEW_ANGLE,
   CAMERA_SET_PARM_3D_EFFECT,
+  CAMERA_SET_PARM_PREVIEW_FORMAT,
   CAMERA_GET_PARM_3D_DISPLAY_DISTANCE, /* 95 */
   CAMERA_GET_PARM_3D_VIEW_ANGLE,
   CAMERA_GET_PARM_3D_EFFECT,
@@ -640,7 +641,6 @@ typedef enum {
   CAMERA_SET_3A_CONVERGENCE,
   CAMERA_SET_PREVIEW_HFR, /*120*/
   CAMERA_GET_MAX_DIMENSION,
-  CAMERA_SET_ZSL_FLASH,
   CAMERA_GET_MAX_NUM_FACES_DECT,
   CAMERA_SET_CHANNEL_STREAM,
   CAMERA_GET_CHANNEL_STREAM,
@@ -1048,23 +1048,11 @@ struct fd_roi_t {
   } d;
 };
 
-struct zsl_flash_t {
-    uint32_t frame_idx[5];
-    uint8_t valid_entires;
-};
-
-struct zsl_exp_bracket_t {
-  uint32_t start_frame;
-  uint32_t end_frame;
-};
-
 typedef struct  {
   uint32_t event_id;
   union {
     mm_camera_histo_mem_info_t histo_mem_info;
     struct fd_roi_t roi;
-    struct zsl_flash_t zsl_flash_info;
-    struct zsl_exp_bracket_t zsl_exp_bkt;
   } e;
 } mm_camera_info_event_t;
 
@@ -1097,7 +1085,6 @@ typedef struct {
 
 typedef enum {
   MM_CAMERA_INFO_EVT_ROI,
-  MM_CAMERA_INFO_FLASH_FRAME_IDX,
   MM_CAMERA_INFO_EVT_MAX
 } mm_camera_info_event_type_t;
 

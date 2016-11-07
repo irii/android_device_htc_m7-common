@@ -877,12 +877,6 @@ void mm_camera_msm_evt_notify(mm_camera_obj_t * my_obj, int fd)
         switch(evt->event_type) {
         case MM_CAMERA_EVT_TYPE_INFO:
             CDBG("%s: event id : %d\n", __func__,evt->e.info.event_id);
-            if(evt->e.info.event_id == MM_CAMERA_INFO_FLASH_FRAME_IDX) {
-                CDBG("%s: valid entry: %d\n", __func__, evt->e.info.e.zsl_flash_info.valid_entires);
-                CDBG("%s: frame idx: %d\n", __func__,evt->e.info.e.zsl_flash_info.frame_idx[0]);
-                my_obj->ch[MM_CAMERA_CH_SNAPSHOT].buffering_frame.match_id =
-                    evt->e.info.e.zsl_flash_info.frame_idx[0];
-            }
            break;
         case MM_CAMERA_EVT_TYPE_STATS:
            break;
